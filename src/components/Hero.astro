@@ -2,20 +2,18 @@
 import Mark from './Mark.astro';
 import { site, badges } from '../data/site';
 
-// The masthead says what the banner image says, but in live text: it reflows
-// on a phone, stays crisp on any display, and can be selected and read
-// aloud. The banner PNG is still the social card — that is the one place an
-// image of text is the right answer.
+// The banner states the name, the pitch and the mascot, so nothing here
+// repeats them in text. It swaps with the colour scheme rather than picking
+// one and sitting in a mismatched block on the other: each variant's ground
+// is within a few levels of the page background it lands on, so the image
+// has no visible edge.
 //
-// The mascot keeps its own backdrop. It is a photograph whose white t-shirt
-// sits six levels from its white background with no edge between them, so
-// there is nothing to cut it out along; the panel behind it is drawn in
-// exactly that backdrop's colour, which makes the join deliberate.
+// The page still needs a heading a screen reader and a search engine can
+// read, and alt text on a masthead is not it, so the h1 is present and
+// visually hidden.
 ---
 <header class="hero">
-  <div class="hero-glow" aria-hidden="true"></div>
-
-  <nav class="hero-nav wrap-wide">
+  <nav class="hero-nav wrap">
     <a class="hero-nav-brand" href="/">
       <Mark size={34} id="nav" />
       <span>mast</span>
@@ -27,23 +25,28 @@ import { site, badges } from '../data/site';
     </div>
   </nav>
 
-  <div class="hero-body wrap-wide">
-    <div class="hero-text">
-      <Mark size={128} id="hero" />
-      <h1>{site.name}</h1>
-      <p class="hero-tagline">{site.tagline}</p>
-      <p class="hero-blurb">{site.blurb}</p>
-      <div class="badges">
-        {badges.map((b) => <span class="badge">{b}</span>)}
-      </div>
-      <div class="cta">
-        <a class="btn btn-primary" href={site.repo}>Source</a>
-        <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
-      </div>
-    </div>
+  <div class="wrap">
+    <h1 class="sr-only">{site.name} — {site.tagline}. {site.blurb}</h1>
 
-    <div class="hero-mascot" aria-hidden="true">
-      <img src="/assets/mascot.png" alt="" width="1254" height="1254" loading="eager" />
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/assets/banner.png 1x, /assets/banner@2x.png 2x" />
+      <img
+        class="banner"
+        src="/assets/banner-light.png"
+        srcset="/assets/banner-light.png 1x, /assets/banner-light@2x.png 2x"
+        alt={`${site.name} — ${site.tagline.toLowerCase()}`}
+        width="1280"
+        height="400"
+        fetchpriority="high"
+      />
+    </picture>
+
+    <div class="badges">
+      {badges.map((b) => <span class="badge">{b}</span>)}
+    </div>
+    <div class="cta">
+      <a class="btn btn-primary" href={site.repo}>Source</a>
+      <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
     </div>
   </div>
 </header>
