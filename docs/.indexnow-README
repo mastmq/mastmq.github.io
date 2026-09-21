@@ -1,0 +1,11 @@
+The file named <key>.txt is an IndexNow key. IndexNow is how Bing, Yandex,
+Seznam and Naver are told a URL changed instead of being left to discover
+it on their own schedule; the key file is what proves the submission came
+from whoever controls this host.
+
+The key is not a secret — it is meant to be publicly readable at
+https://mastmq.github.io/<key>.txt, and the protocol does not work if it
+is not. Deleting it silently invalidates every future submission.
+
+Google does not participate. It deprecated sitemap ping in 2023 and takes
+submissions only through Search Console.
