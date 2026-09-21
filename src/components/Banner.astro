@@ -1,0 +1,10 @@
+---
+// The banner states the name and the tagline, so nothing here repeats them
+// in text. It swaps with the colour scheme rather than picking one and
+// sitting in a mismatched block on the other.
+const { alt } = Astro.props as { alt: string };
+---
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/assets/banner.png" />
+  <img class="banner" src="/assets/banner-light.png" alt={alt} width="1280" height="400" />
+</picture>

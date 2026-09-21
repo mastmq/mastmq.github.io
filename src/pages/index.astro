@@ -1,0 +1,114 @@
+---
+import Base from '../layouts/Base.astro';
+import Banner from '../components/Banner.astro';
+import Section from '../components/Section.astro';
+import Cards from '../components/Cards.astro';
+import { site, badges, alternatives, pillars, repos } from '../data/site';
+
+const title = `${site.name} — multi-tenant MQTT broker on core NATS`;
+const description =
+  'An open-source multi-tenant MQTT broker built on core NATS. MQTT 5, shared subscriptions, tenant isolation, free clustering, no JVM, one binary.';
+---
+
+<Base title={title} description={description}>
+  <header>
+    <div class="wrap">
+      <Banner alt={`${site.name} — ${site.tagline.toLowerCase()}`} />
+      <div class="badges">
+        {badges.map((b) => <span class="badge">{b}</span>)}
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" href={site.repo}>Source</a>
+        <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <Section
+      title="Why it exists"
+      lede="Every open-source MQTT broker that does real multi-tenancy makes you give something up."
+    >
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Broker</th><th>The catch</th></tr>
+          </thead>
+          <tbody>
+            {alternatives.map((a) => (
+              <tr><td>{a.broker}</td><td>{a.catch}</td></tr>
+            ))}
+            <tr>
+              <td class="yes">mast</td>
+              <td class="yes">
+                MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits,
+                free clustering, no JVM, and a single binary you can run standalone at a
+                customer site.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </Section>
+
+    <Section title="Run it" lede="No flags needed for the common case. The roles exist for when you outgrow it.">
+      <pre><code><span class="c"># all-in-one: MQTT and storage in one process, no cluster</span>
+mast
+
+<span class="c"># or split the tiers once the MQTT side needs to scale</span>
+<span class="c"># independently of Raft</span>
+mast --role=core   <span class="c"># Raft and the KV buckets, stable peers, a volume</span>
+mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a leaf node</span>
+</code></pre>
+      <p class="note">
+        You do not need the split until you are big. Up to roughly ten nodes, run every
+        process identical and let them mesh.
+      </p>
+    </Section>
+
+    <Section title="How it is put together">
+      <Cards items={pillars} />
+    </Section>
+
+    <Section
+      title="Replacing EMQX"
+      lede="mast speaks EMQX v5's HTTP auth wire, so an auth service written for EMQX works unchanged."
+    >
+      <pre><code>[auth]
+mode = "http"
+
+[auth.http]
+wire = "emqx"          <span class="c"># EMQX's request and response shape</span>
+authn_url = "http://soteria:9999/v2/auth"
+authz_url = "http://soteria:9999/v2/acl"
+on_error = "deny"      <span class="c"># EMQX_AUTHORIZATION__NO_MATCH</span>
+</code></pre>
+      <p class="note">
+        Topics reach the authorization endpoint unmounted, so existing ACL rules keep
+        working. The <a href={site.migrationGuide}>migration guide</a> has the full mapping
+        and the four traps that actually fired doing it — <code>is_superuser</code>,
+        multipath TCP on OpenShift, Helm's map merging, and SCC uid ranges.
+      </p>
+    </Section>
+
+    <Section
+      title="Where the project is"
+      lede="Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, resumes persistent sessions and delivers wills."
+    >
+      <p>
+        Gaps are tracked as issues rather than described as a roadmap. The
+        <a href={site.parityIssues}>parity label</a> is what an MQTT client is entitled to
+        assume and does not yet get. There is no dashboard and no management API, and no
+        plan for a rule engine or data bridges.
+      </p>
+      <div class="cards" style="margin-top:20px">
+        {repos.map((r) => (
+          <div class="card">
+            <h3><a href={r.url}>{r.name}</a></h3>
+            <p>{r.what}</p>
+          </div>
+        ))}
+      </div>
+    </Section>
+  </main>
+</Base>

@@ -1,0 +1,12 @@
+---
+type Card = { title: string; body: string };
+const { items } = Astro.props as { items: readonly Card[] };
+---
+<div class="cards">
+  {items.map((c) => (
+    <div class="card">
+      <h3>{c.title}</h3>
+      <p>{c.body}</p>
+    </div>
+  ))}
+</div>
