@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import Mark from '../components/Mark.astro';
-import { site, repos } from '../data/site';
+import { site, keywords, repos } from '../data/site';
 
 const { title, description } = Astro.props as { title: string; description: string };
 
@@ -9,6 +9,52 @@ const { title, description } = Astro.props as { title: string; description: stri
 // image of text, which is the right answer for a preview thumbnail and the
 // wrong one for a page that has to reflow.
 const ogImage = new URL('/assets/banner.png', Astro.site).href;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Structured data, so a search engine is told what this is rather than left
+// to infer it from prose. SoftwareSourceCode is the type that fits an
+// open-source project: it carries the language, the licence and the
+// repository, none of which are guessable from the page text.
+//
+// @graph rather than three separate scripts, so the nodes can reference
+// each other by @id instead of repeating themselves.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${site.org}#org`,
+      name: 'Mast',
+      url: site.org,
+      logo: new URL('/assets/logo.png', Astro.site).href,
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${Astro.site}#website`,
+      url: Astro.site?.href,
+      name: site.name,
+      description,
+      publisher: { '@id': `${site.org}#org` },
+      inLanguage: 'en',
+    },
+    {
+      '@type': 'SoftwareSourceCode',
+      '@id': `${site.repo}#software`,
+      name: site.name,
+      description,
+      url: Astro.site?.href,
+      codeRepository: site.repo,
+      programmingLanguage: site.language,
+      license: site.licenseUrl,
+      runtimePlatform: 'Linux',
+      applicationCategory: 'DeveloperApplication',
+      keywords: [...keywords].join(', '),
+      author: { '@id': `${site.org}#org` },
+      maintainer: { '@id': `${site.org}#org` },
+      image: ogImage,
+    },
+  ],
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -19,13 +65,22 @@ const ogImage = new URL('/assets/banner.png', Astro.site).href;
     <meta name="description" content={description} />
     <meta name="theme-color" content="#17181a" />
     <link rel="icon" href="/assets/mark.png" />
-    <link rel="canonical" href={Astro.site} />
+    <link rel="apple-touch-icon" href="/assets/logo.png" />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:url" content={Astro.site} />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="400" />
+    <meta property="og:image:alt" content={`${site.name} — ${site.tagline}`} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image:alt" content={`${site.name} — ${site.tagline}`} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body>
     <slot />
@@ -39,7 +94,7 @@ const ogImage = new URL('/assets/banner.png', Astro.site).href;
           {repos.map((r) => <a href={r.url}>{r.name}</a>)}
           <a href={site.org}>Organization</a>
         </div>
-        <div>Apache 2.0</div>
+        <div><a href={site.licenseUrl}>Apache 2.0</a></div>
       </div>
     </footer>
   </body>

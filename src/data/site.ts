@@ -10,7 +10,24 @@ export const site = {
     'https://github.com/mastmq/docs/blob/main/guides/migrating-from-emqx.md',
   parityIssues:
     'https://github.com/mastmq/mast/issues?q=is%3Aissue+is%3Aopen+label%3Aparity',
+  license: 'Apache-2.0',
+  licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0',
+  language: 'Go',
 } as const;
+
+// What the page is about, in the words someone would actually search for.
+// These feed the structured data rather than a meta keywords tag, which no
+// engine has read for well over a decade.
+export const keywords = [
+  'MQTT broker',
+  'multi-tenant MQTT',
+  'MQTT 5',
+  'NATS',
+  'EMQX alternative',
+  'shared subscriptions',
+  'open source message broker',
+  'IoT',
+] as const;
 
 export const badges = [
   'MQTT 3.1.1 & 5.0',

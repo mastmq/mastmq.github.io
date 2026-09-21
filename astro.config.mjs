@@ -1,8 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
+  // site is what makes the canonical link, the og:url and the sitemap
+  // absolute. Without it the sitemap integration emits nothing at all.
   site: 'https://mastmq.github.io',
+
+  integrations: [sitemap()],
 
   // Built output is committed and served by Pages straight from the branch,
   // which is why it lands in docs/ rather than dist/. Pages will only serve
