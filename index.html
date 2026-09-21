@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mast — multi-tenant MQTT broker on core NATS</title>
+<meta name="description" content="An open-source multi-tenant MQTT broker built on core NATS. MQTT 5, shared subscriptions, tenant isolation, free clustering, no JVM, one binary.">
+<link rel="icon" href="assets/mark.png">
+<link rel="stylesheet" href="style.css">
+<meta property="og:title" content="mast — multi-tenant MQTT broker on core NATS">
+<meta property="og:description" content="MQTT 5, shared subscriptions, tenant isolation, free clustering, no JVM, one binary.">
+<meta property="og:image" content="https://mastmq.github.io/assets/logo.png">
+<meta property="og:url" content="https://mastmq.github.io/">
+<meta name="twitter:card" content="summary">
+</head>
+<body>
+
+<header>
+  <div class="wrap hero">
+    <img src="assets/mascot.png" alt="The mast mascot, a panda wearing a mast t-shirt">
+    <div class="hero-text">
+      <h1>mast</h1>
+      <p class="tagline">A multi-tenant MQTT broker built on core NATS. One binary, from an edge box to a clustered fleet.</p>
+      <div class="badges">
+        <span class="badge">MQTT 3.1.1 &amp; 5.0</span>
+        <span class="badge">Shared subscriptions</span>
+        <span class="badge">Apache 2.0</span>
+        <span class="badge">No JVM</span>
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/mastmq/mast">Source</a>
+        <a class="btn btn-ghost" href="https://github.com/mastmq/docs/blob/main/guides/migrating-from-emqx.md">Migrating from EMQX</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="wrap">
+  <h2>Why it exists</h2>
+  <p class="lede">Every open-source MQTT broker that does real multi-tenancy makes you give something up.</p>
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>Broker</th><th>The catch</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>EMQX</td><td>Business Source License since 5.9 — clustering more than one node needs a paid licence key.</td></tr>
+      <tr><td>BifroMQ</td><td>Genuine native multi-tenancy, but it runs on the JVM.</td></tr>
+      <tr><td>VerneMQ</td><td>Apache 2.0 source, but the official packages and images are under a EULA that charges for commercial use.</td></tr>
+      <tr><td>RabbitMQ</td><td>vhosts, but no QoS 2 and no shared subscriptions.</td></tr>
+      <tr><td>Mosquitto, NanoMQ, FlashMQ, mochi</td><td>Do not cluster at all.</td></tr>
+      <tr><td class="yes">mast</td><td class="yes">MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits, free clustering, no JVM, and a single binary you can run standalone at a customer site.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Run it</h2>
+  <p class="lede">No flags needed for the common case. The roles exist for when you outgrow it.</p>
+<pre><code><span class="c"># all-in-one: MQTT and storage in one process, no cluster</span>
+mast
+
+<span class="c"># or split the tiers once the MQTT side needs to scale</span>
+<span class="c"># independently of Raft</span>
+mast --role=core   <span class="c"># Raft and the KV buckets, stable peers, a volume</span>
+mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a leaf node</span>
+</code></pre>
+  <p class="note">You do not need the split until you are big. Up to roughly ten nodes, run every process identical and let them mesh.</p>
+</section>
+
+<section class="wrap">
+  <h2>How it is put together</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Core NATS moves messages</h3>
+      <p>Live fan-out rides core NATS, which handles tens of millions of subjects at roughly a gigabyte of memory per million subscriptions.</p>
+    </div>
+    <div class="card">
+      <h3>A key-value store holds keys</h3>
+      <p>Sessions, retained messages and offline queues live in a handful of JetStream KV buckets. Never a consumer per subscription: consumers are Raft state machines, and a real fleet would want hundreds of thousands.</p>
+    </div>
+    <div class="card">
+      <h3>Isolation is structural</h3>
+      <p>Every topic is mounted under its tenant before validation, authorization or subscription sees it, and unmounted on the way out. A client never learns the prefix exists.</p>
+    </div>
+    <div class="card">
+      <h3>Authentication, two ways</h3>
+      <p>Ask an HTTP service, or verify a signed token locally. They compose: authenticate from a token while topic decisions still go to a policy server.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Replacing EMQX</h2>
+  <p class="lede">mast speaks EMQX v5's HTTP auth wire, so an auth service written for EMQX works unchanged.</p>
+<pre><code>[auth]
+mode = "http"
+
+[auth.http]
+wire = "emqx"          <span class="c"># EMQX's request and response shape</span>
+authn_url = "http://soteria:9999/v2/auth"
+authz_url = "http://soteria:9999/v2/acl"
+on_error = "deny"      <span class="c"># EMQX_AUTHORIZATION__NO_MATCH</span>
+</code></pre>
+  <p class="note">Topics reach the authorization endpoint unmounted, so existing ACL rules keep working. The <a href="https://github.com/mastmq/docs/blob/main/guides/migrating-from-emqx.md">migration guide</a> has the full mapping and the four traps that actually fired doing it — <code>is_superuser</code>, multipath TCP on OpenShift, Helm's map merging, and SCC uid ranges.</p>
+</section>
+
+<section class="wrap">
+  <h2>Where the project is</h2>
+  <p class="lede">Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, resumes persistent sessions and delivers wills.</p>
+  <p>Gaps are tracked as issues rather than described as a roadmap. The <a href="https://github.com/mastmq/mast/issues?q=is%3Aissue+is%3Aopen+label%3Aparity">parity label</a> is what an MQTT client is entitled to assume and does not yet get. There is no dashboard and no management API, and no plan for a rule engine or data bridges.</p>
+  <div class="cards" style="margin-top:20px">
+    <div class="card"><h3><a href="https://github.com/mastmq/mast">mast</a></h3><p>The broker.</p></div>
+    <div class="card"><h3><a href="https://github.com/mastmq/charts">charts</a></h3><p>Helm charts.</p></div>
+    <div class="card"><h3><a href="https://github.com/mastmq/docs">docs</a></h3><p>Architecture notes and operational guides.</p></div>
+    <div class="card"><h3><a href="https://github.com/mastmq/bench">bench</a></h3><p>Load and latency benchmarks.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Apache 2.0 &middot; <a href="https://github.com/mastmq">github.com/mastmq</a>
+  </div>
+</footer>
+
+</body>
+</html>
