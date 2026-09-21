@@ -1,8 +1,13 @@
 ---
 import '../styles/global.css';
-import { site } from '../data/site';
+import Mark from '../components/Mark.astro';
+import { site, repos } from '../data/site';
 
 const { title, description } = Astro.props as { title: string; description: string };
+
+// The banner is the social card and nothing else on the site. It is an
+// image of text, which is the right answer for a preview thumbnail and the
+// wrong one for a page that has to reflow.
 const ogImage = new URL('/assets/banner.png', Astro.site).href;
 ---
 <!doctype html>
@@ -12,6 +17,7 @@ const ogImage = new URL('/assets/banner.png', Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#17181a" />
     <link rel="icon" href="/assets/mark.png" />
     <link rel="canonical" href={Astro.site} />
     <meta property="og:title" content={title} />
@@ -24,8 +30,16 @@ const ogImage = new URL('/assets/banner.png', Astro.site).href;
   <body>
     <slot />
     <footer>
-      <div class="wrap">
-        Apache 2.0 &middot; <a href={site.org}>github.com/mastmq</a>
+      <div class="wrap-wide footer-row">
+        <a class="footer-brand" href="/">
+          <Mark size={30} id="foot" />
+          <span>mast</span>
+        </a>
+        <div class="footer-links">
+          {repos.map((r) => <a href={r.url}>{r.name}</a>)}
+          <a href={site.org}>Organization</a>
+        </div>
+        <div>Apache 2.0</div>
       </div>
     </footer>
   </body>

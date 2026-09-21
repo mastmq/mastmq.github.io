@@ -1,0 +1,43 @@
+---
+// The logo mark, drawn rather than linked, so it stays crisp at any size and
+// takes its colours from the surrounding theme.
+//
+// The geometry is the same as assets/banner.py in the .github repository:
+// nine rounded bars on a parabola, the middle one extended upward to carry
+// the beacon, split on a diagonal into a warm half and a cool one.
+const { size = 96, id = 'mark' } = Astro.props as { size?: number; id?: string };
+
+const N = 9;
+const UNIT = 13;
+const GAP = 10;
+const PEAK = 112;
+const CX = 98.5;
+const CY = 88;
+const TOTAL = N * UNIT + (N - 1) * GAP;
+const X0 = CX - TOTAL / 2;
+
+const bars = Array.from({ length: N }, (_, i) => {
+  const t = (i - (N - 1) / 2) / ((N - 1) / 2);
+  const h = PEAK * (1 - 0.7 * t * t) + (i === (N - 1) / 2 ? 26 : 0);
+  return { x: X0 + i * (UNIT + GAP), y: CY - h / 2, h };
+});
+const beacon = bars[(N - 1) / 2];
+---
+<svg viewBox="0 0 197 162" width={size} height={size * (162 / 197)} role="img" aria-label="mast" class="mark">
+  <defs>
+    <clipPath id={`${id}-hot`}>
+      <polygon points={`-28,198 233,-22 233,-220 -28,-220`} />
+    </clipPath>
+    <clipPath id={`${id}-cool`}>
+      <polygon points={`-28,198 233,-22 233,380 -28,380`} />
+    </clipPath>
+    <g id={`${id}-bars`}>
+      {bars.map((b) => (
+        <rect x={b.x} y={b.y} width={UNIT} height={b.h} rx={UNIT / 2} />
+      ))}
+    </g>
+  </defs>
+  <use href={`#${id}-bars`} clip-path={`url(#${id}-hot)`} class="mark-hot" />
+  <use href={`#${id}-bars`} clip-path={`url(#${id}-cool)`} class="mark-cool" />
+  <circle cx={beacon.x + UNIT / 2} cy={beacon.y} r="14.5" class="mark-hot" />
+</svg>

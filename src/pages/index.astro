@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import Banner from '../components/Banner.astro';
+import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import Cards from '../components/Cards.astro';
-import { site, badges, alternatives, pillars, repos } from '../data/site';
+import { site, alternatives, pillars, repos } from '../data/site';
 
 const title = `${site.name} — multi-tenant MQTT broker on core NATS`;
 const description =
@@ -11,18 +11,7 @@ const description =
 ---
 
 <Base title={title} description={description}>
-  <header>
-    <div class="wrap">
-      <Banner alt={`${site.name} — ${site.tagline.toLowerCase()}`} />
-      <div class="badges">
-        {badges.map((b) => <span class="badge">{b}</span>)}
-      </div>
-      <div class="cta">
-        <a class="btn btn-primary" href={site.repo}>Source</a>
-        <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
-      </div>
-    </div>
-  </header>
+  <Hero />
 
   <main>
     <Section
@@ -38,9 +27,9 @@ const description =
             {alternatives.map((a) => (
               <tr><td>{a.broker}</td><td>{a.catch}</td></tr>
             ))}
-            <tr>
+            <tr class="mast-row">
               <td class="yes">mast</td>
-              <td class="yes">
+              <td>
                 MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits,
                 free clustering, no JVM, and a single binary you can run standalone at a
                 customer site.
@@ -96,8 +85,8 @@ on_error = "deny"      <span class="c"># EMQX_AUTHORIZATION__NO_MATCH</span>
       lede="Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, resumes persistent sessions and delivers wills."
     >
       <p>
-        Gaps are tracked as issues rather than described as a roadmap. The
-        <a href={site.parityIssues}>parity label</a> is what an MQTT client is entitled to
+        Gaps are tracked as issues rather than described as a roadmap. The <a
+        href={site.parityIssues}>parity label</a> is what an MQTT client is entitled to
         assume and does not yet get. There is no dashboard and no management API, and no
         plan for a rule engine or data bridges.
       </p>

@@ -1,0 +1,49 @@
+---
+import Mark from './Mark.astro';
+import { site, badges } from '../data/site';
+
+// The masthead says what the banner image says, but in live text: it reflows
+// on a phone, stays crisp on any display, and can be selected and read
+// aloud. The banner PNG is still the social card — that is the one place an
+// image of text is the right answer.
+//
+// The mascot keeps its own backdrop. It is a photograph whose white t-shirt
+// sits six levels from its white background with no edge between them, so
+// there is nothing to cut it out along; the panel behind it is drawn in
+// exactly that backdrop's colour, which makes the join deliberate.
+---
+<header class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <nav class="hero-nav wrap-wide">
+    <a class="hero-nav-brand" href="/">
+      <Mark size={34} id="nav" />
+      <span>mast</span>
+    </a>
+    <div class="hero-nav-links">
+      <a href={site.migrationGuide}>Migrating from EMQX</a>
+      <a href={site.org}>Organization</a>
+      <a href={site.repo}>GitHub</a>
+    </div>
+  </nav>
+
+  <div class="hero-body wrap-wide">
+    <div class="hero-text">
+      <Mark size={128} id="hero" />
+      <h1>{site.name}</h1>
+      <p class="hero-tagline">{site.tagline}</p>
+      <p class="hero-blurb">{site.blurb}</p>
+      <div class="badges">
+        {badges.map((b) => <span class="badge">{b}</span>)}
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" href={site.repo}>Source</a>
+        <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
+      </div>
+    </div>
+
+    <div class="hero-mascot" aria-hidden="true">
+      <img src="/assets/mascot.png" alt="" width="1254" height="1254" loading="eager" />
+    </div>
+  </div>
+</header>
