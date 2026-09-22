@@ -89,4 +89,5 @@ export const repos = [
   { name: 'charts', url: 'https://github.com/mastmq/charts', what: 'Helm charts.' },
   { name: 'docs', url: 'https://github.com/mastmq/docs', what: 'Architecture notes and operational guides.' },
   { name: 'bench', url: 'https://github.com/mastmq/bench', what: 'Load and latency benchmarks.' },
+  { name: 'mochi', url: 'https://github.com/mastmq/mochi', what: 'The MQTT library the broker embeds, carrying fixes upstream has not merged.' },
 ] as const;
