@@ -10,6 +10,8 @@ export const site = {
     'https://github.com/mastmq/docs/blob/main/guides/migrating-from-emqx.md',
   parityIssues:
     'https://github.com/mastmq/mast/issues?q=is%3Aissue+is%3Aopen+label%3Aparity',
+  deliveryGuide:
+    'https://github.com/mastmq/docs/blob/main/guides/delivery-guarantees.md',
   license: 'Apache-2.0',
   licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0',
   language: 'Go',

@@ -90,6 +90,14 @@ on_error = "deny"      <span class="c"># EMQX_AUTHORIZATION__NO_MATCH</span>
         assume and does not yet get. There is no dashboard and no management API, and no
         plan for a rule engine or data bridges.
       </p>
+      <p class="note">
+        One limit is worth knowing before you build on it. Within a node, QoS 0 through 2
+        are honoured in full. Across a cluster the hop between nodes is core NATS, which is
+        at-most-once, so a publisher is acknowledged before the message has crossed it and
+        cross-node QoS 1 and 2 are best-effort. <a href={site.deliveryGuide}>Delivery
+        guarantees</a> sets out what each QoS promises hop by hop, when the fabric actually
+        drops, and the fix that is not in yet.
+      </p>
       <div class="cards" style="margin-top:20px">
         {repos.map((r) => (
           <div class="card">
