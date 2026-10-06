@@ -87,6 +87,7 @@ export const pillars = [
 export const repos = [
   { name: 'mast', url: 'https://github.com/mastmq/mast', what: 'The broker.' },
   { name: 'charts', url: 'https://github.com/mastmq/charts', what: 'Helm charts.' },
+  { name: 'ansible', url: 'https://github.com/mastmq/ansible', what: 'An Ansible collection for virtual machines and bare metal.' },
   { name: 'docs', url: 'https://github.com/mastmq/docs', what: 'Architecture notes and operational guides.' },
   { name: 'bench', url: 'https://github.com/mastmq/bench', what: 'Load and latency benchmarks.' },
   { name: 'mochi', url: 'https://github.com/mastmq/mochi', what: 'The MQTT library the broker embeds, carrying fixes upstream has not merged.' },
