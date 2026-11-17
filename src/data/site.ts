@@ -121,6 +121,11 @@ export const drills = {
       after: 'none lost, 9 runs of 9',
     },
     {
+      drill: '300,000 sleeping devices held by every core, then 2,000 more woken among them',
+      before: 'not run',
+      after: 'held in 12s at about 650 MB a core; 10,000 of 10,000 delivered',
+    },
+    {
       drill: '1,500 subscribers to 2,000 retained topics at once',
       before: '924 of 1,500 complete after 2m 10s',
       after: '1,500 of 1,500 in 8.5s',

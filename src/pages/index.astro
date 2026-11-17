@@ -92,7 +92,7 @@ mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a 
         Two things did not get better. Every core now reads every QoS 1 and 2 message to
         find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1
         load and is where the higher p99 comes from. And a device that is still connected
-        when its edge is killed outright loses what was in flight to it until it reconnects
+        when its edge is killed outright loses what is published to it until it reconnects
         elsewhere; a graceful restart loses nothing. <a href={site.deliveryGuide}>Delivery
         guarantees</a> lists both.
       </p>
