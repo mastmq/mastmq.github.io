@@ -204,3 +204,33 @@ footer a { color: var(--muted); }
   .hero-nav { padding-bottom: 18px; }
   section { padding: 36px 0; }
 }
+
+/* ── Architecture figure ────────────────────────────────────────────── */
+
+/* Scrolls on a phone rather than shrinking: at 360px wide the labels of a
+   980-unit drawing came out under five pixels tall. */
+.figure-scroll { overflow-x: auto; margin: 4px 0 8px; }
+.arch { display: block; width: 100%; min-width: 760px; height: auto; font-family: inherit; }
+.arch text { font-size: 13px; fill: var(--ink); }
+.arch .arch-tier { font-size: 12px; fill: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.arch .arch-strong { font-weight: 600; }
+.arch .arch-muted { fill: var(--muted); font-size: 12px; }
+.arch-box { fill: var(--card); stroke: var(--rule); stroke-width: 1.5; }
+.arch-away { stroke-dasharray: 5 4; }
+.arch-tierbox { fill: none; stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.arch-store { fill: rgb(242 113 28 / 0.07); stroke: color-mix(in srgb, var(--orange) 55%, var(--rule)); stroke-width: 1.5; }
+.arch-link { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.arch-dashed { stroke-dasharray: 5 4; }
+.arch-hot { stroke: var(--orange); stroke-width: 2; }
+.arch-mesh { stroke: var(--muted); stroke-width: 2; }
+.arch-arrowhead { fill: var(--muted); }
+.arch-badge { fill: var(--orange); }
+.arch .arch-badge-n { fill: #fff; font-size: 12px; font-weight: 700; }
+
+.steps { max-width: 68ch; padding-left: 1.4em; margin: 18px 0 0; }
+.steps li { margin: 0 0 8px; }
+.steps li::marker { color: var(--orange); font-weight: 700; }
+
+.results td:nth-child(2) { color: var(--muted); }
+.results td:nth-child(3) { font-weight: 600; }
+.results td { min-width: 12ch; }

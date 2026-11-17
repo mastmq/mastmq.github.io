@@ -3,7 +3,8 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import Cards from '../components/Cards.astro';
-import { site, alternatives, pillars, repos } from '../data/site';
+import Architecture from '../components/Architecture.astro';
+import { site, alternatives, pillars, repos, flow, drills } from '../data/site';
 
 const title = `${site.name} — multi-tenant MQTT broker on core NATS`;
 const description =
@@ -57,6 +58,44 @@ mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a 
 
     <Section title="How it is put together">
       <Cards items={pillars} />
+    </Section>
+
+    <Section
+      id="architecture"
+      title="Where a message goes"
+      lede="Edges speak MQTT and keep nothing. Cores keep everything, in four replicated JetStream assets, whatever the number of devices."
+    >
+      <Architecture />
+      <ol class="steps">
+        {flow.map((step) => <li>{step}</li>)}
+      </ol>
+    </Section>
+
+    <Section
+      id="under-fire"
+      title="Under fire"
+      lede={`Drills on ${drills.shape}, with nodes killed by SIGKILL and restarted, run on ${drills.when}. Every message carries an id, and the drill counts which ones arrived.`}
+    >
+      <div class="table-scroll">
+        <table class="results">
+          <thead>
+            <tr><th>Drill</th><th>Before</th><th>After</th></tr>
+          </thead>
+          <tbody>
+            {drills.rows.map((r) => (
+              <tr><td>{r.drill}</td><td>{r.before}</td><td>{r.after}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Two things did not get better. Every core now reads every QoS 1 and 2 message to
+        find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1
+        load and is where the higher p99 comes from. And a device that is still connected
+        when its edge is killed outright loses what was in flight to it until it reconnects
+        elsewhere; a graceful restart loses nothing. <a href={site.deliveryGuide}>Delivery
+        guarantees</a> lists both.
+      </p>
     </Section>
 
     <Section

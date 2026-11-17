@@ -72,7 +72,7 @@ export const pillars = [
   },
   {
     title: 'A key-value store holds keys',
-    body: 'Sessions, retained messages and offline queues live in a handful of JetStream KV buckets. Never a consumer per subscription: consumers are Raft state machines, and a real fleet would want hundreds of thousands.',
+    body: 'Sessions, retained messages and offline queues live in a handful of replicated JetStream buckets and streams, kept by the core tier, so a sleeping device keeps its messages when its edge restarts. Never a consumer per subscription: consumers are Raft state machines, and a real fleet would want hundreds of thousands.',
   },
   {
     title: 'Isolation is structural',
@@ -92,3 +92,58 @@ export const repos = [
   { name: 'bench', url: 'https://github.com/mastmq/bench', what: 'Load and latency benchmarks.' },
   { name: 'mochi', url: 'https://github.com/mastmq/mochi', what: 'The MQTT library the broker embeds, carrying fixes upstream has not merged.' },
 ] as const;
+
+// The numbered steps under the architecture figure. The badges in
+// Architecture.astro carry the same numbers.
+export const flow = [
+  'A QoS 1 or 2 publish is written to mast_qos, replicated on three cores, before the device gets its PUBACK. QoS 0 is never stored.',
+  'Live delivery rides core NATS to every node with a subscriber. Each node also reads mast_qos through one consumer of its own, so a node cut off from the core catches up when it returns.',
+  'Each core’s queuer watches the sessions bucket for devices that are away, and copies their QoS 1/2 messages into mast_offline. Every writer names a message the same way, so the stream keeps one copy however many wrote it.',
+  'When the device comes back, to any edge, that edge reads its queue with a direct get, delivers it, and removes only what it read. No consumer is ever created per device.',
+] as const;
+
+// Drills against a real cluster in Docker: three cores, three edges, kills
+// with SIGKILL. "Before" is the build just ahead of the change that moved
+// offline queueing to the core tier; "after" is that change. Losses here
+// are counted per message by payload, not inferred from rates.
+export const drills = {
+  when: '2026-11-16',
+  shape: 'three cores and three edges in Docker on one laptop (6 CPUs)',
+  rows: [
+    {
+      drill: '2,000 sleeping devices, every edge restarted in turn',
+      before: '10,000 of 10,000 lost',
+      after: 'none lost',
+    },
+    {
+      drill: '5,000 sleeping devices, 100,000 messages, a core and two edges killed',
+      before: 'not run',
+      after: 'none lost, 9 runs of 9',
+    },
+    {
+      drill: '1,500 subscribers to 2,000 retained topics at once',
+      before: '924 of 1,500 complete after 2m 10s',
+      after: '1,500 of 1,500 in 8.5s',
+    },
+    {
+      drill: 'QoS 1, 5,000 msg/s to 5 subscribers',
+      before: 'none lost, p99 1.4ms',
+      after: 'none lost, p99 4.1ms',
+    },
+    {
+      drill: 'QoS 1 fan-out to 2,000 subscribers',
+      before: 'none lost, p99 110ms',
+      after: 'none lost, p99 74ms',
+    },
+    {
+      drill: '6,000 clients connecting at once',
+      before: '6,111 per second',
+      after: '7,995 per second',
+    },
+    {
+      drill: '3,000 connected devices at 2,000 msg/s; an edge and a core killed, another edge restarted',
+      before: '89 acknowledged messages lost',
+      after: '79 acknowledged messages lost',
+    },
+  ],
+} as const;
