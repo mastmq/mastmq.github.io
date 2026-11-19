@@ -1,8 +1,14 @@
 ---
-const { title, lede, id } = Astro.props as { title: string; lede?: string; id?: string };
+// The band (the full-width background on alternate sections) needs an
+// element wider than the text column, so the section spans the page and the
+// .wrap is inside it. That also removes the old trap where a padding
+// shorthand on .wrap zeroed the section's own vertical padding.
+const { title, lede, id, alt } = Astro.props as { title: string; lede?: string; id?: string; alt?: boolean };
 ---
-<section class="wrap" id={id}>
-  <h2>{title}</h2>
-  {lede && <p class="lede">{lede}</p>}
-  <slot />
+<section id={id} class:list={[{ band: alt }]}>
+  <div class="wrap">
+    <h2>{title}</h2>
+    {lede && <p class="lede">{lede}</p>}
+    <slot />
+  </div>
 </section>

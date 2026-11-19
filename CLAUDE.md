@@ -26,7 +26,7 @@ To undo it once that is possible: drop `outDir`, add `dist/` to `.gitignore`, de
 
 ## Content lives in data, not in markup
 
-`src/data/site.ts` holds the tagline, the comparison table, the four pillars, the repo list, the keywords and every cross-repo URL. `src/pages/index.astro` composes them; `src/layouts/Base.astro` reads the same objects to build the metadata.
+`src/data/site.ts` holds the tagline, the headline figures, the comparison table, the four pillars, the install paths, the drill results, the section list the nav is built from, the repo list, the keywords and every cross-repo URL. `src/pages/index.astro` composes them; `src/layouts/Base.astro` reads the same objects to build the metadata.
 
 That is the point: the page and the structured data cannot drift apart. **Adding a claim by typing it into the markup defeats it** — put it in `site.ts`.
 
@@ -40,19 +40,25 @@ All of it is already wired. When changing the page, keep these intact:
 - `robots.txt` points at `sitemap-index.xml`.
 - Google deprecated sitemap ping in 2023. Submission is Search Console (manual) plus IndexNow (Bing, Yandex, Seznam, Naver).
 
-## Three layout bugs that are fixed and easy to re-introduce
+## Layout bugs that are fixed and easy to re-introduce
 
-**`.wrap` uses `padding-inline`, not the `padding` shorthand.** `Section.astro` renders `<section class="wrap">`. A shorthand on `.wrap` silently zeroes `section { padding: 48px 0 }`, because a class beats an element selector. Sections had never had vertical padding until this was found with an in-browser DOM probe. If you touch `.wrap`, do not reach for `padding`.
+**Sections put `.wrap` inside, not on, the `<section>`.** `Section.astro` once rendered `<section class="wrap">`, and a `padding` shorthand on `.wrap` silently zeroed `section { padding }`, because a class beats an element selector. The section now spans the page (it has to, for the `.band` background on alternate sections) and holds a `.wrap`. Keep `.wrap` on `padding-inline` anyway: the nav uses it too.
 
 **`white-space: nowrap` is scoped to `tr.mast-row td:first-child`.** On both cells it pushed the comparison table past the viewport. `.table-scroll` also scrolls at every width, not only on a phone.
 
 **`.cards` uses `minmax(min(100%, 330px), 1fr)`.** Plain `minmax(330px, 1fr)` gives three columns and one orphan for four pillars, and forces a horizontal scroll on a phone. The `min()` collapses the track instead.
 
-## The banner
+## The masthead, and where the banner went
 
-The hero is the banner PNG itself, in a `<picture>` with a `prefers-color-scheme: dark` source and 1x/2x `srcset`. The `<h1>` is `.sr-only` — the banner is an image of text, so **its `alt` is the one string a screen reader gets.** Keep it `mast — Multi-tenant MQTT broker built on core NATS`, properly cased; `.toLowerCase()` was applied to it once by accident.
+The masthead is real text: a visible `<h1>` with `site.tagline`, `site.pitch`, the badges and the buttons, with the mascot beside it, then three figures from `stats` in `site.ts`. It used to be the banner PNG with a hidden `<h1>`, and on a phone that put the tagline at about 6px. Do not put the banner back as the hero.
 
-Testing the light variant is awkward: headless Chrome reports a dark OS preference, `--force-prefers-color-scheme=light` does not work, and `data-theme="light"` cannot drive a `<picture>` media query. Exercise the light branch by rewriting the query to `no-preference` in a throwaway copy.
+The banner is still the social card (`og:image` in `Base.astro`), where an image of text is the right answer. Its alt text there must stay `mast — Multi-tenant MQTT broker built on core NATS`, properly cased; `.toLowerCase()` was applied to it once by accident. The mascot is decoration, so its `alt` is empty, and it is hidden under 860px.
+
+The figures in `stats` each come from a row of `drills`. Change them together, or the headline claims more than the table shows.
+
+Below 860px the section links move into a `<details>` menu. A line of inline script closes it after a link is followed; it works without that line.
+
+Testing the light theme: headless Chrome reports a dark OS preference and `--force-prefers-color-scheme=light` does not work. Copy `docs/index.html` with `data-theme="light"` on `<html>`, serve it with `npx astro preview`, and delete the copy. Testing phone width: headless Chrome will not make a window narrower than about 500px, so load the page in a 390px `<iframe>` instead.
 
 ## Assets
 

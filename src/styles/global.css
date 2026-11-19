@@ -9,7 +9,7 @@
   --rule: #e2e2e2;
   --card: #ffffff;
   --code-bg: #f7f7f7;
-
+  --band: #ebebeb;
 }
 
 :root:not([data-theme="light"]) {
@@ -21,6 +21,7 @@
     --card: #1e2023;
     --charcoal: #c9c9c9;
     --code-bg: #131416;
+    --band: #1c1d20;
   }
 }
 
@@ -32,6 +33,7 @@
   --card: #1e2023;
   --charcoal: #c9c9c9;
   --code-bg: #131416;
+  --band: #1c1d20;
 }
 
 * { box-sizing: border-box; }
@@ -48,9 +50,8 @@ body {
    under it share a left edge, which they did not when the hero was wider
    than the prose column. Prose is kept readable by a max-width on the text
    itself; tables and card grids are free to use the full width. */
-/* padding-inline, not the padding shorthand: Section renders <section
-   class="wrap">, and a shorthand here silently zeroed the section's own
-   vertical padding, which is a class beating an element selector. */
+/* padding-inline still, not the shorthand: .wrap also sits on the nav,
+   which sets its own vertical padding. */
 .wrap, .wrap-wide { max-width: 1060px; margin-inline: auto; padding-inline: 24px; }
 
 a { color: var(--orange); text-decoration: none; }
@@ -73,7 +74,7 @@ a:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 
-.hero { padding-bottom: 8px; }
+.hero { padding-bottom: 16px; }
 
 .hero-nav {
   display: flex;
@@ -100,16 +101,75 @@ a:hover { text-decoration: underline; }
 .hero-nav-links a { color: var(--muted); }
 .hero-nav-links a:hover { color: var(--ink); text-decoration: none; }
 
-/* Each variant's ground is within a few levels of the page background it
-   lands on, so the banner needs no frame — the rounding is only there to
-   keep the mascot's panel from squaring off the corner. */
-.banner {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  margin-bottom: 26px;
+.nav-menu { display: none; position: relative; }
+.nav-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  font-size: 0.92rem;
+  color: var(--ink);
 }
+.nav-menu summary::-webkit-details-marker { display: none; }
+.nav-menu-links {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 8px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.25);
+}
+.nav-menu-links a { color: var(--ink); padding: 8px 10px; border-radius: 8px; }
+.nav-menu-links a:hover { background: var(--band); text-decoration: none; }
+
+/* Text on the left, the mascot on the right. The mascot is decoration
+   (alt=""), so on a phone it goes rather than pushing the heading down. */
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 40px;
+  align-items: center;
+  padding-top: 24px;
+  padding-bottom: 8px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 1.2rem + 3.2vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  margin: 0 0 18px;
+  max-width: 19ch;
+}
+.hero-pitch { font-size: 1.15rem; margin: 0 0 22px; max-width: 52ch; }
+.mascot { width: 100%; height: auto; border-radius: 24px; }
+
+/* Each figure links to the drill it came from. */
+.stats {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+.stats a {
+  display: block;
+  height: 100%;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  color: var(--ink);
+}
+.stats a:hover { text-decoration: none; border-color: color-mix(in srgb, var(--orange) 55%, var(--rule)); }
+.stats strong { display: block; font-size: 1.9rem; letter-spacing: -0.03em; color: var(--orange); line-height: 1.2; }
+.stats span { color: var(--muted); font-size: 0.9rem; }
 
 .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
 .badge {
@@ -136,11 +196,14 @@ a:hover { text-decoration: underline; }
 
 /* ── Body ───────────────────────────────────────────────────────────── */
 
-section { padding: 48px 0; border-top: 1px solid var(--rule); }
-main > section:first-child { border-top: none; }
+/* Alternate sections sit on a band, so the page has a rhythm and a reader
+   can see where one part ends without a rule between every pair. */
+section { padding: 64px 0; }
+section.band { background: var(--band); }
+section.band .card, section.band pre { background: var(--ground); }
 
-h2 { font-size: 1.5rem; margin: 0 0 8px; letter-spacing: -0.02em; }
-.lede { color: var(--muted); margin: 0 0 24px; }
+h2 { font-size: 1.85rem; margin: 0 0 10px; letter-spacing: -0.025em; line-height: 1.2; }
+.lede { color: var(--muted); font-size: 1.08rem; margin: 0 0 28px; }
 main p, main .lede { max-width: 68ch; }
 main pre { max-width: 80ch; }
 
@@ -181,7 +244,7 @@ td.yes { color: var(--orange); font-weight: 600; }
 }
 .card:hover { border-color: color-mix(in srgb, var(--orange) 55%, var(--rule)); transform: translateY(-2px); }
 .card h3 { margin: 0 0 6px; font-size: 1rem; }
-.card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.card p { margin: 0; color: color-mix(in srgb, var(--ink) 82%, var(--ground)); font-size: 0.95rem; }
 
 .note {
   border-left: 3px solid var(--orange);
@@ -201,8 +264,11 @@ footer a { color: var(--muted); }
 
 @media (max-width: 860px) {
   .hero-nav-links { display: none; }
+  .nav-menu { display: block; }
   .hero-nav { padding-bottom: 18px; }
-  section { padding: 36px 0; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .mascot { display: none; }
+  section { padding: 44px 0; }
 }
 
 /* ── Architecture figure ────────────────────────────────────────────── */
@@ -234,6 +300,24 @@ footer a { color: var(--muted); }
 .results td:nth-child(2) { color: var(--muted); }
 .results td:nth-child(3) { font-weight: 600; }
 .results td { min-width: 12ch; }
+
+.more-rows { margin-top: 18px; }
+.more-rows summary { cursor: pointer; color: var(--orange); font-weight: 600; }
+.more-rows table { margin-top: 12px; }
+
+/* On a phone each drill becomes a block with its own labels: as three
+   columns the drill text wrapped into cells three words wide. */
+@media (max-width: 640px) {
+  .results thead { display: none; }
+  .results tr { display: block; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .results td { display: block; border: none; padding: 2px 0; min-width: 0; }
+  .results td:first-child { font-weight: 600; margin-bottom: 4px; }
+  .results td:not(:first-child)::before {
+    content: attr(data-label) ": ";
+    color: var(--muted);
+    font-weight: 400;
+  }
+}
 
 /* ── Run it ─────────────────────────────────────────────────────────── */
 

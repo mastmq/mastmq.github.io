@@ -4,6 +4,9 @@ export const site = {
   name: 'mast',
   tagline: 'Multi-tenant MQTT broker built on core NATS',
   blurb: 'One binary, from an edge box to a clustered fleet.',
+  // The sentence under the h1. The tagline says what it is; this says why
+  // someone with a fleet would care, in the terms they would compare on.
+  pitch: 'Tenant isolation, MQTT 5 and free clustering, without the JVM or a licence key. Sleeping devices keep their messages when nodes die.',
   repo: 'https://github.com/mastmq/mast',
   org: 'https://github.com/mastmq',
   migrationGuide:
@@ -115,21 +118,25 @@ export const drills = {
   rows: [
     {
       drill: '2,000 sleeping devices, every edge restarted in turn',
+      featured: true,
       before: '10,000 of 10,000 lost',
       after: 'none lost',
     },
     {
       drill: '5,000 sleeping devices, 100,000 messages, a core and two edges killed',
+      featured: true,
       before: 'not run',
       after: 'none lost, 9 runs of 9',
     },
     {
       drill: '300,000 sleeping devices held by every core, then 2,000 more woken among them',
+      featured: true,
       before: 'not run',
       after: 'held in 12s at about 650 MB a core; 10,000 of 10,000 delivered',
     },
     {
       drill: '1,500 subscribers to 2,000 retained topics at once',
+      featured: true,
       before: '924 of 1,500 complete after 2m 10s',
       after: '1,500 of 1,500 in 8.5s',
     },
@@ -156,19 +163,27 @@ export const drills = {
   ],
 } as const;
 
+// The three numbers under the masthead. Each is lifted from a drill row
+// above and links to it, so the headline cannot claim more than the table.
+export const stats = [
+  { value: '300,000', label: 'sleeping devices held by three cores, at about 650 MB a core' },
+  { value: '0 lost', label: 'of 100,000 messages, a core and two edges killed, 9 runs of 9' },
+  { value: '7,995/s', label: 'clients connecting at once, on one laptop' },
+] as const;
+
 // The in-page sections, in page order. The masthead nav is built from the
 // ones with a `nav` label, so an anchor cannot point at a section that was
 // renamed or removed. The first and the last have none: the first is what
 // the page opens on, and the repositories are in the footer too.
 export const sections = {
   why: { id: 'why', title: 'Why it exists' },
-  design: { id: 'design', nav: 'Design', title: 'How it is put together' },
+  design: { alt: true, id: 'design', nav: 'Design', title: 'How it is put together' },
   architecture: { id: 'architecture', nav: 'Architecture', title: 'Where a message goes' },
-  run: { id: 'run', nav: 'Run it', title: 'Run it' },
+  run: { alt: true, id: 'run', nav: 'Run it', title: 'Run it' },
   results: { id: 'under-fire', nav: 'Test results', title: 'Under fire' },
-  emqx: { id: 'emqx', nav: 'From EMQX', title: 'Replacing EMQX' },
+  emqx: { alt: true, id: 'emqx', nav: 'From EMQX', title: 'Replacing EMQX' },
   status: { id: 'status', nav: 'Status', title: 'Where the project is' },
-  repos: { id: 'repos', title: 'Repositories' },
+  repos: { alt: true, id: 'repos', title: 'Repositories' },
 } as const;
 
 export const why = {
@@ -177,7 +192,7 @@ export const why = {
 } as const;
 
 export const architecture = {
-  lede: 'Edges speak MQTT and keep nothing. Cores keep everything, in four replicated JetStream assets, whatever the number of devices.',
+  lede: 'Edges speak MQTT and keep nothing; each one joins the cores as a NATS leaf node, an ordinary outbound connection. Cores keep everything, in four replicated JetStream assets, whatever the number of devices.',
 } as const;
 
 // A line of a shown code block: the code, and an optional comment drawn
@@ -207,8 +222,12 @@ export const run = {
       url: site.releases,
       link: 'Releases',
       body: 'Static Linux builds for amd64 and arm64, with a checksums file.',
+      // The archive name carries the version, so releases/latest/download
+      // cannot name it; the API's latest release can.
       lines: [
-        { code: 'tar xzf mast_<version>_linux_amd64.tar.gz' },
+        { comment: '# the latest release, linux/amd64' },
+        { code: 'curl -sL https://api.github.com/repos/mastmq/mast/releases/latest \\' },
+        { code: "  | grep -o 'https://[^\"]*linux_amd64.tar.gz' | xargs curl -sL | tar xz" },
         { code: './mast' },
       ],
     },

@@ -14,6 +14,12 @@ const title = `${site.name} — multi-tenant MQTT broker on core NATS`;
 const description =
   'An open-source multi-tenant MQTT broker built on core NATS. MQTT 5, shared subscriptions, tenant isolation, free clustering, no JVM, one binary.';
 
+// The four drills that carry the claim are shown; the rest, the
+// regressions among them, are one click away and named in the note under
+// the table, so hiding them cannot read as hiding them.
+const featured = drills.rows.filter((r) => 'featured' in r);
+const rest = drills.rows.filter((r) => !('featured' in r));
+
 // The page reads as an argument: what is missing elsewhere, how mast fills
 // it, how to run it, the evidence that it holds, then what it is not yet.
 ---
@@ -71,18 +77,29 @@ const description =
       {...s.results}
       lede={`Drills on ${drills.shape}, with nodes killed by SIGKILL and restarted, run on ${drills.when}. Every message carries an id, and the drill counts which ones arrived.`}
     >
-      <div class="table-scroll">
+      <table class="results">
+        <thead>
+          <tr><th>Drill</th><th>Before</th><th>After</th></tr>
+        </thead>
+        <tbody>
+          {featured.map((r) => (
+            <tr><td data-label="Drill">{r.drill}</td><td data-label="Before">{r.before}</td><td data-label="After">{r.after}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <details class="more-rows">
+        <summary>The other {rest.length} drills, including the two that did not improve</summary>
         <table class="results">
           <thead>
             <tr><th>Drill</th><th>Before</th><th>After</th></tr>
           </thead>
           <tbody>
-            {drills.rows.map((r) => (
-              <tr><td>{r.drill}</td><td>{r.before}</td><td>{r.after}</td></tr>
+            {rest.map((r) => (
+              <tr><td data-label="Drill">{r.drill}</td><td data-label="Before">{r.before}</td><td data-label="After">{r.after}</td></tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </details>
       <p class="note">{results.note} <a href={site.deliveryGuide}>Delivery guarantees</a> lists both.</p>
     </Section>
 
