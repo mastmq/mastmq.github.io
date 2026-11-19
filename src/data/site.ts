@@ -212,11 +212,17 @@ export const run = {
     { code: 'mast --role=edge   ', comment: '# MQTT listeners, stateless, joins core as a leaf node' },
   ] satisfies CodeLine[],
   note: 'You do not need the split until you are big. Up to roughly ten nodes, run every process identical and let them mesh.',
-  // Only the ways that are published and tested. A container one-liner is
-  // left out on purpose: the image is distroless and runs as nonroot from
-  // /, so the default store_dir of ./data has nowhere to be written unless
-  // a volume and a config say otherwise, which the chart does for you.
+  // Only the ways that are published and tested. The container one was
+  // once left out on the guess that a nonroot image could not write the
+  // default ./data; it can, and a stored QoS 1 publish proved it.
   install: [
+    {
+      title: 'A container',
+      url: 'https://github.com/mastmq/mast/pkgs/container/mast',
+      link: 'Image',
+      body: 'All-in-one, with every client in one tenant: right for a laptop, wrong for anything reachable by someone else.',
+      lines: [{ code: 'docker run -p 1883:1883 ghcr.io/mastmq/mast' }],
+    },
     {
       title: 'A binary',
       url: site.releases,
@@ -235,7 +241,7 @@ export const run = {
       title: 'Kubernetes',
       url: site.chart,
       link: 'Helm chart',
-      body: 'Standalone or clustered, with the core tier as a StatefulSet.',
+      body: 'Standalone or clustered, with the core tier as a StatefulSet; HTTP or JWT auth, and TLS from a cert-manager Secret.',
       lines: [{ code: 'helm install mast oci://ghcr.io/mastmq/charts/mast' }],
     },
     {
@@ -274,5 +280,5 @@ export const emqx = {
 export const status = {
   lede: 'Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, delivers wills, and carries a persistent session from one node to another.',
   gaps: 'Gaps are tracked as issues rather than described as a roadmap. The parity label is what an MQTT client is entitled to assume and does not yet get. There is no dashboard and no management API, and no plan for a rule engine or data bridges.',
-  limit: 'One limit is worth knowing before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. Shared subscriptions whose members span nodes are still best-effort.',
+  limit: 'Know the limits before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. Two things are still best-effort: shared subscriptions whose members span nodes, and a message a node had taken when it died, which includes one for a device still connected to an edge that is killed outright.',
 } as const;
