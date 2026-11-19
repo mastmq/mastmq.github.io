@@ -234,3 +234,17 @@ footer a { color: var(--muted); }
 .results td:nth-child(2) { color: var(--muted); }
 .results td:nth-child(3) { font-weight: 600; }
 .results td { min-width: 12ch; }
+
+/* ── Run it ─────────────────────────────────────────────────────────── */
+
+/* One install path per row, not three side by side: in a third of the
+   column the commands were cut off mid-URL, and a command a reader cannot
+   see whole is one they cannot copy with confidence. */
+.install { margin-top: 28px; grid-template-columns: 1fr; max-width: 80ch; }
+.install pre { font-size: 0.85rem; padding: 12px 14px; margin: 12px 0; }
+.install .more { font-weight: 600; font-size: 0.92rem; }
+
+/* An in-page link lands with the heading clear of the window edge. */
+section[id] { scroll-margin-top: 8px; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

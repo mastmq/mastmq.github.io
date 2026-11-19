@@ -3,22 +3,26 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import Cards from '../components/Cards.astro';
+import Code from '../components/Code.astro';
 import Architecture from '../components/Architecture.astro';
-import { site, alternatives, pillars, repos, flow, drills } from '../data/site';
+import {
+  site, sections as s, why, alternatives, pillars, architecture, flow,
+  run, drills, results, emqx, status, repos,
+} from '../data/site';
 
 const title = `${site.name} — multi-tenant MQTT broker on core NATS`;
 const description =
   'An open-source multi-tenant MQTT broker built on core NATS. MQTT 5, shared subscriptions, tenant isolation, free clustering, no JVM, one binary.';
+
+// The page reads as an argument: what is missing elsewhere, how mast fills
+// it, how to run it, the evidence that it holds, then what it is not yet.
 ---
 
 <Base title={title} description={description}>
   <Hero />
 
   <main>
-    <Section
-      title="Why it exists"
-      lede="Every open-source MQTT broker that does real multi-tenancy makes you give something up."
-    >
+    <Section {...s.why} lede={why.lede}>
       <div class="table-scroll">
         <table>
           <thead>
@@ -29,51 +33,42 @@ const description =
               <tr><td>{a.broker}</td><td>{a.catch}</td></tr>
             ))}
             <tr class="mast-row">
-              <td class="yes">mast</td>
-              <td>
-                MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits,
-                free clustering, no JVM, and a single binary you can run standalone at a
-                customer site.
-              </td>
+              <td class="yes">{site.name}</td>
+              <td>{why.mast}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </Section>
 
-    <Section title="Run it" lede="No flags needed for the common case. The roles exist for when you outgrow it.">
-      <pre><code><span class="c"># all-in-one: MQTT and storage in one process, no cluster</span>
-mast
-
-<span class="c"># or split the tiers once the MQTT side needs to scale</span>
-<span class="c"># independently of Raft</span>
-mast --role=core   <span class="c"># Raft and the KV buckets, stable peers, a volume</span>
-mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a leaf node</span>
-</code></pre>
-      <p class="note">
-        You do not need the split until you are big. Up to roughly ten nodes, run every
-        process identical and let them mesh.
-      </p>
-    </Section>
-
-    <Section title="How it is put together">
+    <Section {...s.design}>
       <Cards items={pillars} />
     </Section>
 
-    <Section
-      id="architecture"
-      title="Where a message goes"
-      lede="Edges speak MQTT and keep nothing. Cores keep everything, in four replicated JetStream assets, whatever the number of devices."
-    >
+    <Section {...s.architecture} lede={architecture.lede}>
       <Architecture />
       <ol class="steps">
         {flow.map((step) => <li>{step}</li>)}
       </ol>
     </Section>
 
+    <Section {...s.run} lede={run.lede}>
+      <Code lines={run.roles} label="The three roles" />
+      <p class="note">{run.note}</p>
+      <div class="cards install">
+        {run.install.map((i) => (
+          <div class="card">
+            <h3>{i.title}</h3>
+            <p>{i.body}</p>
+            <Code lines={i.lines} label={`Install: ${i.title}`} />
+            <a class="more" href={i.url}>{i.link} →</a>
+          </div>
+        ))}
+      </div>
+    </Section>
+
     <Section
-      id="under-fire"
-      title="Under fire"
+      {...s.results}
       lede={`Drills on ${drills.shape}, with nodes killed by SIGKILL and restarted, run on ${drills.when}. Every message carries an id, and the drill counts which ones arrived.`}
     >
       <div class="table-scroll">
@@ -88,63 +83,21 @@ mast --role=edge   <span class="c"># MQTT listeners, stateless, joins core as a 
           </tbody>
         </table>
       </div>
-      <p class="note">
-        Two things did not get better. Every core now reads every QoS 1 and 2 message to
-        find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1
-        load and is where the higher p99 comes from. And a device that is still connected
-        when its edge is killed outright loses what is published to it until it reconnects
-        elsewhere; a graceful restart loses nothing. <a href={site.deliveryGuide}>Delivery
-        guarantees</a> lists both.
-      </p>
+      <p class="note">{results.note} <a href={site.deliveryGuide}>Delivery guarantees</a> lists both.</p>
     </Section>
 
-    <Section
-      title="Replacing EMQX"
-      lede="mast speaks EMQX v5's HTTP auth wire, so an auth service written for EMQX works unchanged."
-    >
-      <pre><code>[auth]
-mode = "http"
-
-[auth.http]
-wire = "emqx"          <span class="c"># EMQX's request and response shape</span>
-authn_url = "http://soteria:9999/v2/auth"
-authz_url = "http://soteria:9999/v2/acl"
-on_error = "deny"      <span class="c"># EMQX_AUTHORIZATION__NO_MATCH</span>
-</code></pre>
-      <p class="note">
-        Topics reach the authorization endpoint unmounted, so existing ACL rules keep
-        working. The <a href={site.migrationGuide}>migration guide</a> has the full mapping
-        and the four traps that actually fired doing it — <code>is_superuser</code>,
-        multipath TCP on OpenShift, Helm's map merging, and SCC uid ranges.
-      </p>
+    <Section {...s.emqx} lede={emqx.lede}>
+      <Code lines={emqx.config} label="EMQX-compatible auth configuration" />
+      <p class="note">{emqx.note} <a href={site.migrationGuide}>Read the migration guide →</a></p>
     </Section>
 
-    <Section
-      title="Where the project is"
-      lede="Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, delivers wills, and carries a persistent session from one node to another."
-    >
-      <p>
-        Gaps are tracked as issues rather than described as a roadmap. The <a
-        href={site.parityIssues}>parity label</a> is what an MQTT client is entitled to
-        assume and does not yet get. There is no dashboard and no management API, and no
-        plan for a rule engine or data bridges.
-      </p>
-      <p class="note">
-        One limit is worth knowing before you build on it. QoS 1 and 2 hold across a
-        cluster: a publish is stored on a replicated stream before it is acknowledged, and a
-        node cut off from the core catches up when it returns. Shared subscriptions whose
-        members span nodes are still best-effort. <a href={site.deliveryGuide}>Delivery
-        guarantees</a> sets out what each QoS promises hop by hop, what it costs, and where
-        it still falls short.
-      </p>
-      <div class="cards" style="margin-top:20px">
-        {repos.map((r) => (
-          <div class="card">
-            <h3><a href={r.url}>{r.name}</a></h3>
-            <p>{r.what}</p>
-          </div>
-        ))}
-      </div>
+    <Section {...s.status} lede={status.lede}>
+      <p>{status.gaps} <a href={site.parityIssues}>Open parity issues →</a></p>
+      <p class="note">{status.limit} <a href={site.deliveryGuide}>Delivery guarantees</a> sets out what each QoS promises hop by hop, what it costs, and where it still falls short.</p>
+    </Section>
+
+    <Section {...s.repos} lede={`Everything lives under the ${site.org.replace('https://', '')} organization, under ${site.license}.`}>
+      <Cards items={repos.map((r) => ({ title: r.name, body: r.what, url: r.url }))} />
     </Section>
   </main>
 </Base>

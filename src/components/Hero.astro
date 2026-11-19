@@ -1,6 +1,8 @@
 ---
 import Mark from './Mark.astro';
-import { site, badges } from '../data/site';
+import { site, badges, sections } from '../data/site';
+
+const nav = Object.values(sections).flatMap((x) => ('nav' in x ? [{ id: x.id, label: x.nav }] : []));
 
 // The banner states the name, the pitch and the mascot, so nothing here
 // repeats them in text. It swaps with the colour scheme rather than picking
@@ -19,10 +21,7 @@ import { site, badges } from '../data/site';
       <span>mast</span>
     </a>
     <div class="hero-nav-links">
-      <a href="#architecture">Architecture</a>
-      <a href="#under-fire">Test results</a>
-      <a href={site.migrationGuide}>Migrating from EMQX</a>
-      <a href={site.org}>Organization</a>
+      {nav.map((n) => <a href={`#${n.id}`}>{n.label}</a>)}
       <a href={site.repo}>GitHub</a>
     </div>
   </nav>
@@ -47,8 +46,9 @@ import { site, badges } from '../data/site';
       {badges.map((b) => <span class="badge">{b}</span>)}
     </div>
     <div class="cta">
-      <a class="btn btn-primary" href={site.repo}>Source</a>
-      <a class="btn btn-ghost" href={site.migrationGuide}>Migrating from EMQX</a>
+      <a class="btn btn-primary" href={`#${sections.run.id}`}>Get started</a>
+      <a class="btn btn-ghost" href={site.repo}>Source on GitHub</a>
+      <a class="btn btn-ghost" href={`#${sections.emqx.id}`}>Coming from EMQX</a>
     </div>
   </div>
 </header>

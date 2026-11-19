@@ -1,0 +1,8 @@
+---
+// A code block from CodeLine data. The comment is muted so the command
+// reads first; the newline is part of each line's output because <pre>
+// keeps whitespace, so nothing here may be indented inside the <code>.
+import type { CodeLine } from '../data/site';
+const { lines, label } = Astro.props as { lines: readonly CodeLine[]; label?: string };
+---
+<pre aria-label={label}><code>{lines.map((l) => (<>{l.code}{l.comment && <span class="c">{l.comment}</span>}{'\n'}</>))}</code></pre>

@@ -1,11 +1,13 @@
 ---
-type Card = { title: string; body: string };
+// A card's title is a link when it has a url. The whole card is not made
+// clickable: it holds prose a reader may want to select.
+type Card = { title: string; body: string; url?: string };
 const { items } = Astro.props as { items: readonly Card[] };
 ---
 <div class="cards">
   {items.map((c) => (
     <div class="card">
-      <h3>{c.title}</h3>
+      <h3>{c.url ? <a href={c.url}>{c.title}</a> : c.title}</h3>
       <p>{c.body}</p>
     </div>
   ))}

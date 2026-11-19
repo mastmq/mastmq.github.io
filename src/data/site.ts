@@ -12,6 +12,9 @@ export const site = {
     'https://github.com/mastmq/mast/issues?q=is%3Aissue+is%3Aopen+label%3Aparity',
   deliveryGuide:
     'https://github.com/mastmq/docs/blob/main/guides/delivery-guarantees.md',
+  releases: 'https://github.com/mastmq/mast/releases',
+  chart: 'https://github.com/mastmq/charts',
+  collection: 'https://github.com/mastmq/ansible',
   license: 'Apache-2.0',
   licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0',
   language: 'Go',
@@ -151,4 +154,106 @@ export const drills = {
       after: '79 acknowledged messages lost',
     },
   ],
+} as const;
+
+// The in-page sections, in page order. The masthead nav is built from the
+// ones with a `nav` label, so an anchor cannot point at a section that was
+// renamed or removed. The first and the last have none: the first is what
+// the page opens on, and the repositories are in the footer too.
+export const sections = {
+  why: { id: 'why', title: 'Why it exists' },
+  design: { id: 'design', nav: 'Design', title: 'How it is put together' },
+  architecture: { id: 'architecture', nav: 'Architecture', title: 'Where a message goes' },
+  run: { id: 'run', nav: 'Run it', title: 'Run it' },
+  results: { id: 'under-fire', nav: 'Test results', title: 'Under fire' },
+  emqx: { id: 'emqx', nav: 'From EMQX', title: 'Replacing EMQX' },
+  status: { id: 'status', nav: 'Status', title: 'Where the project is' },
+  repos: { id: 'repos', title: 'Repositories' },
+} as const;
+
+export const why = {
+  lede: 'Every open-source MQTT broker that does real multi-tenancy makes you give something up.',
+  mast: 'MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits, free clustering, no JVM, and a single binary you can run standalone at a customer site.',
+} as const;
+
+export const architecture = {
+  lede: 'Edges speak MQTT and keep nothing. Cores keep everything, in four replicated JetStream assets, whatever the number of devices.',
+} as const;
+
+// A line of a shown code block: the code, and an optional comment drawn
+// muted after it. Kept as data so the snippets sit with the rest of the
+// copy instead of as hand-escaped spans in the markup.
+export type CodeLine = { code?: string; comment?: string };
+
+export const run = {
+  lede: 'One binary, three roles. No flags are needed for the common case; the roles exist for when you outgrow it.',
+  roles: [
+    { comment: '# all-in-one: MQTT and storage in one process, no cluster' },
+    { code: 'mast' },
+    {},
+    { comment: '# or split the tiers once the MQTT side needs to scale' },
+    { comment: '# independently of Raft' },
+    { code: 'mast --role=core   ', comment: '# Raft and the KV buckets, stable peers, a volume' },
+    { code: 'mast --role=edge   ', comment: '# MQTT listeners, stateless, joins core as a leaf node' },
+  ] satisfies CodeLine[],
+  note: 'You do not need the split until you are big. Up to roughly ten nodes, run every process identical and let them mesh.',
+  // Only the ways that are published and tested. A container one-liner is
+  // left out on purpose: the image is distroless and runs as nonroot from
+  // /, so the default store_dir of ./data has nowhere to be written unless
+  // a volume and a config say otherwise, which the chart does for you.
+  install: [
+    {
+      title: 'A binary',
+      url: site.releases,
+      link: 'Releases',
+      body: 'Static Linux builds for amd64 and arm64, with a checksums file.',
+      lines: [
+        { code: 'tar xzf mast_<version>_linux_amd64.tar.gz' },
+        { code: './mast' },
+      ],
+    },
+    {
+      title: 'Kubernetes',
+      url: site.chart,
+      link: 'Helm chart',
+      body: 'Standalone or clustered, with the core tier as a StatefulSet.',
+      lines: [{ code: 'helm install mast oci://ghcr.io/mastmq/charts/mast' }],
+    },
+    {
+      title: 'Virtual machines',
+      url: site.collection,
+      link: 'Ansible collection',
+      body: 'systemd units on any amd64 or arm64 host; the inventory group picks the role.',
+      lines: [
+        { code: 'ansible-galaxy collection install \\' },
+        { code: '  git+https://github.com/mastmq/ansible.git' },
+        { code: 'ansible-playbook -i inventory.yml mastmq.mast.site' },
+      ],
+    },
+  ] satisfies { title: string; url: string; link: string; body: string; lines: CodeLine[] }[],
+} as const;
+
+export const results = {
+  note: 'Two things did not get better. Every core now reads every QoS 1 and 2 message to find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1 load and is where the higher p99 comes from. And a device that is still connected when its edge is killed outright loses what is published to it until it reconnects elsewhere; a graceful restart loses nothing.',
+} as const;
+
+export const emqx = {
+  lede: 'mast speaks EMQX v5’s HTTP auth wire, so an auth service written for EMQX works unchanged.',
+  config: [
+    { code: '[auth]' },
+    { code: 'mode = "http"' },
+    {},
+    { code: '[auth.http]' },
+    { code: 'wire = "emqx"          ', comment: '# EMQX’s request and response shape' },
+    { code: 'authn_url = "http://soteria:9999/v2/auth"' },
+    { code: 'authz_url = "http://soteria:9999/v2/acl"' },
+    { code: 'on_error = "deny"      ', comment: '# EMQX_AUTHORIZATION__NO_MATCH' },
+  ] satisfies CodeLine[],
+  note: 'Topics reach the authorization endpoint unmounted, so existing ACL rules keep working. The migration guide has the full mapping and the four traps that actually fired doing it: is_superuser, multipath TCP on OpenShift, Helm’s map merging, and SCC uid ranges.',
+} as const;
+
+export const status = {
+  lede: 'Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, delivers wills, and carries a persistent session from one node to another.',
+  gaps: 'Gaps are tracked as issues rather than described as a roadmap. The parity label is what an MQTT client is entitled to assume and does not yet get. There is no dashboard and no management API, and no plan for a rule engine or data bridges.',
+  limit: 'One limit is worth knowing before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. Shared subscriptions whose members span nodes are still best-effort.',
 } as const;
