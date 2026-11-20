@@ -188,7 +188,10 @@ export const sections = {
 
 export const why = {
   lede: 'Every open-source MQTT broker that does real multi-tenancy makes you give something up.',
-  mast: 'MQTT 5 with shared subscriptions, tenant isolation with per-tenant limits, free clustering, no JVM, and a single binary you can run standalone at a customer site.',
+  // Isolation, not limits: tenants cannot see each other's traffic, but
+  // nothing yet stops one from using more than its share of a node. This
+  // line once claimed per-tenant limits; the broker README never did.
+  mast: 'MQTT 5 with shared subscriptions, tenant isolation, free clustering, no JVM, and a single binary you can run standalone at a customer site. Per-tenant limits are the piece still missing.',
 } as const;
 
 export const architecture = {
@@ -279,6 +282,6 @@ export const emqx = {
 
 export const status = {
   lede: 'Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, delivers wills, and carries a persistent session from one node to another.',
-  gaps: 'Gaps are tracked as issues rather than described as a roadmap. The parity label is what an MQTT client is entitled to assume and does not yet get. There is no dashboard and no management API, and no plan for a rule engine or data bridges.',
+  gaps: 'Gaps are tracked as issues rather than described as a roadmap. The parity label is what an MQTT client is entitled to assume and does not yet get. There are no per-tenant quotas and no connection rate limiting yet, so one tenant can still use more than its share of a node. There is no dashboard and no management API, and no plan for a rule engine or data bridges.',
   limit: 'Know the limits before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. Two things are still best-effort: shared subscriptions whose members span nodes, and a message a node had taken when it died, which includes one for a device still connected to an edge that is killed outright.',
 } as const;
