@@ -10,19 +10,17 @@ Three files in `public/` look like debris and are not. Deleting any of them brea
 | --- | --- |
 | `public/google7bdfbc05c791f975.html` | Google Search Console verification. Search Console **re-checks periodically and silently unverifies** the property if it 404s |
 | `public/a11c22e86daf4145d41b5d32ed74f235.txt` | the IndexNow key. Public by design — that is how the protocol works. Removing it invalidates every future submission |
-| `public/.nojekyll` | Pages runs Jekyll on a branch deploy, and Jekyll ignores directories beginning with `_`, which is exactly where Astro puts bundled assets. Without this the site loads unstyled |
+| `public/.nojekyll` | Not needed by the Actions deploy, but Pages runs Jekyll on a branch deploy, and Jekyll ignores directories beginning with `_`, which is exactly where Astro puts bundled assets. If Pages is ever switched back to a branch source (the fallback when a workflow deploy breaks), the site loads unstyled without it |
 
 `public/.indexnow-README` explains the key file to a human who finds it. Keep it next to the key.
 
-## How it deploys, and why the build output is committed
+## How it deploys
 
-GitHub Pages serves `docs/` straight from `main`. That is why `astro.config.mjs` sets `outDir: './docs'` and why build output is in git.
+Every push to `main` runs `.github/workflows/deploy.yaml`: `withastro/action` runs `npm run check && npm run build` and uploads `dist/`, and `actions/deploy-pages` publishes it. The Pages source is "GitHub Actions" (`build_type: workflow`). Build output is not in git; `dist/` is ignored.
 
-**This is a stopgap, not a preference.** Committing build output makes diffs noisy and lets the output drift from the source. It is done this way because a Pages deploy through Actions needs a workflow file, and the token available when this was set up could not write `.github/workflows/`.
+Until 2026-11-20 the site was served by a branch deploy of a `docs/` folder committed on `main`, because the token available when it was set up could not write `.github/workflows/`. Committed output made diffs noisy and could drift from the source, so it went as soon as a workflow could be pushed. A branch source serves only what is in git, so going back to it for an emergency means committing a build again (into `docs/`, with `outDir` set) and then `gh api -X PUT repos/mastmq/mastmq.github.io/pages -f build_type=legacy -f 'source[branch]=main' -f 'source[path]=/docs'`. Switching the source alone takes the site down. Fix the workflow instead where possible.
 
-To undo it once that is possible: drop `outDir`, add `dist/` to `.gitignore`, delete `docs/`, add a workflow using `withastro/action`. Nothing else changes. `public/.nojekyll` stays either way.
-
-**Practical consequence: `npm run build` is part of every content change.** A commit that edits `src/` without the regenerated `docs/` deploys nothing. Always build, then commit both.
+After pushing, the deploy takes about a minute. Watch it with `gh run watch <id> --exit-status`, then verify with a real request to the live URL rather than assuming.
 
 ## Content lives in data, not in markup
 
@@ -58,7 +56,7 @@ The figures in `stats` each come from a row of `drills`. Change them together, o
 
 Below 860px the section links move into a `<details>` menu. A line of inline script closes it after a link is followed; it works without that line.
 
-Testing the light theme: headless Chrome reports a dark OS preference and `--force-prefers-color-scheme=light` does not work. Copy `docs/index.html` with `data-theme="light"` on `<html>`, serve it with `npx astro preview`, and delete the copy. Testing phone width: headless Chrome will not make a window narrower than about 500px, so load the page in a 390px `<iframe>` instead.
+Testing the light theme: headless Chrome reports a dark OS preference and `--force-prefers-color-scheme=light` does not work. Build, copy `dist/index.html` with `data-theme="light"` on `<html>`, serve it with `npx astro preview`, and delete the copy. Testing phone width: headless Chrome will not make a window narrower than about 500px, so load the page in a 390px `<iframe>` instead.
 
 ## Assets
 
@@ -71,11 +69,10 @@ Colours in `:root` at the top of `src/styles/global.css` are sampled from the ar
 ```console
 $ npm install
 $ npm run dev      # http://localhost:4321
-$ npm run build    # writes docs/ — required before committing
-$ npm run check
+$ npm run build    # writes dist/, which is not committed
+$ npm run check    # astro check; CI runs it before every deploy
 ```
 
-After pushing, Pages takes roughly 45 seconds. Verify with a real request to the live URL rather than assuming.
 
 ## Conventions
 

@@ -6,6 +6,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Pages publishes what this uploads; the build output is not in git. It once
+# was, in docs/, because the token in use then could not write this file.
+
 # The deploy job needs to write to Pages and to prove who it is with an OIDC
 # token; nothing else here writes anything.
 permissions:
@@ -29,7 +32,6 @@ jobs:
           # The type check runs here too, so a page that does not check
           # never ships.
           build-cmd: npm run check && npm run build
-          out-dir: docs
 
   deploy:
     needs: build
