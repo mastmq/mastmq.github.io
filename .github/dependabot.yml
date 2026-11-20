@@ -1,0 +1,27 @@
+---
+version: 2
+updates:
+  # Pages serves the committed build in docs/, so merging one of these PRs
+  # deploys nothing until someone runs `npm run build` and commits the output.
+  # That is also the check worth doing: a dependency bump that changes the
+  # rendered page shows up as a diff in docs/. Astro majors stay out of the
+  # group, because they have changed config and output format before.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # No workflow exists yet: the site deploys from the committed docs/. This
+  # entry is here so the Actions deploy on the roadmap is kept current from
+  # its first day rather than from whenever someone remembers.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
