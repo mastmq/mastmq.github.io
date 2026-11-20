@@ -1,11 +1,12 @@
 ---
 version: 2
 updates:
-  # Pages serves the committed build in docs/, so merging one of these PRs
-  # deploys nothing until someone runs `npm run build` and commits the output.
-  # That is also the check worth doing: a dependency bump that changes the
-  # rendered page shows up as a diff in docs/. Astro majors stay out of the
-  # group, because they have changed config and output format before.
+  # deploy.yaml checks and builds only on a push to main, so a bump PR shows
+  # no check of its own: it is first built when it is merged. A build that
+  # fails there stops before the deploy job and the previous site stays up,
+  # so run `npm run check && npm run build` on the branch before merging.
+  # Astro majors stay out of the group, because they have changed config and
+  # output format before.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -15,9 +16,7 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
-  # No workflow exists yet: the site deploys from the committed docs/. This
-  # entry is here so the Actions deploy on the roadmap is kept current from
-  # its first day rather than from whenever someone remembers.
+  # deploy.yaml pins withastro/action and the Pages actions by major.
   - package-ecosystem: github-actions
     directory: /
     schedule:
