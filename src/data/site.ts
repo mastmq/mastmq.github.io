@@ -112,6 +112,12 @@ export const flow = [
 // with SIGKILL. "Before" is the build just ahead of the change that moved
 // offline queueing to the core tier; "after" is that change. Losses here
 // are counted per message by payload, not inferred from rates.
+//
+// The last two rows are a later change, dead-edge detection, run on
+// 2026-11-21 against the build just ahead of it, three runs each. Their
+// cells say so, because the table's date and its before and after are the
+// queuer's. The other kills in the first of them lose a few messages on
+// both builds, which is why it is not zero; the second isolates the edge.
 export const drills = {
   when: '2026-11-16',
   shape: 'three cores and three edges in Docker on one laptop (6 CPUs)',
@@ -157,8 +163,13 @@ export const drills = {
     },
     {
       drill: '3,000 connected devices at 2,000 msg/s; an edge and a core killed, another edge restarted',
-      before: '89 acknowledged messages lost',
-      after: '79 acknowledged messages lost',
+      before: '53 to 776 lost in 3 runs, before dead-edge detection',
+      after: '12 to 51 lost in 3 runs, about 2,400 delivered twice',
+    },
+    {
+      drill: '3,000 connected devices at 2,000 msg/s; only the edge killed',
+      before: '64 to 1,556 lost in 3 runs, before dead-edge detection',
+      after: 'none lost, 3 runs of 3; the gap arrives about 38s late',
     },
   ],
 } as const;
@@ -263,7 +274,7 @@ export const run = {
 } as const;
 
 export const results = {
-  note: 'Two things did not get better. Every core now reads every QoS 1 and 2 message to find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1 load and is where the higher p99 comes from. And a device that is still connected when its edge is killed outright loses what is published to it until it reconnects elsewhere; a graceful restart loses nothing.',
+  note: 'One thing did not get better. Every core now reads every QoS 1 and 2 message to find the ones a sleeping device needs, which roughly doubles core CPU under QoS 1 load and is where the higher p99 comes from. A device still connected when its edge is killed outright no longer loses what is published to it: the cores notice the edge’s heartbeats stop, take over its sessions and replay the gap, at the price of duplicates and of the gap arriving about half a minute late.',
 } as const;
 
 export const emqx = {
@@ -284,5 +295,5 @@ export const emqx = {
 export const status = {
   lede: 'Early, and honest about it. The broker runs, moves messages across a cluster with tenant isolation, honours QoS 0 through 2, replays retained messages, delivers wills, and carries a persistent session from one node to another.',
   gaps: 'Gaps are tracked as issues rather than described as a roadmap. The parity label is what an MQTT client is entitled to assume and does not yet get. Per-tenant limits, on main for the release after v0.3.2, cap a tenant’s connections across the cluster, its publish rate on each node and what is kept for each of its sleeping devices; the rate of new connections, inbound bytes and stored sessions are not capped yet. There is no dashboard and no management API, and no plan for a rule engine or data bridges.',
-  limit: 'Know the limits before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. Two things are still best-effort: shared subscriptions whose members span nodes, and a message a node had taken when it died, which includes one for a device still connected to an edge that is killed outright.',
+  limit: 'Know the limits before you build on it. QoS 1 and 2 hold across a cluster: a publish is stored on a replicated stream before it is acknowledged, and a node cut off from the core catches up when it returns. A persistent session survives its edge being killed outright: the cores declare the edge dead after ten silent seconds and replay what its device missed. Still best-effort: shared subscriptions whose members span nodes, and a message a node had taken when it died, which for a persistent session on a killed edge narrows to what the edge took more than five seconds before it went silent. And a graceful edge restart under load loses a few messages for its connected devices, for a reason not yet found.',
 } as const;

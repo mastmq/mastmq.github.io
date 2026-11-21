@@ -88,7 +88,7 @@ const rest = drills.rows.filter((r) => !('featured' in r));
         </tbody>
       </table>
       <details class="more-rows">
-        <summary>The other {rest.length} drills, including the two that did not improve</summary>
+        <summary>The other {rest.length} drills, including the one that did not improve</summary>
         <table class="results">
           <thead>
             <tr><th>Drill</th><th>Before</th><th>After</th></tr>
@@ -100,7 +100,7 @@ const rest = drills.rows.filter((r) => !('featured' in r));
           </tbody>
         </table>
       </details>
-      <p class="note">{results.note} <a href={site.deliveryGuide}>Delivery guarantees</a> lists both.</p>
+      <p class="note">{results.note} <a href={site.deliveryGuide}>Delivery guarantees</a> has the detail.</p>
     </Section>
 
     <Section {...s.emqx} lede={emqx.lede}>
